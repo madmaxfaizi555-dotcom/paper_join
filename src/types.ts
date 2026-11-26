@@ -1,21 +1,30 @@
 export type WorkspaceView =
-  | "overview"
-  | "paste-zone"
-  | "text-formatter"
-  | "merge"
+  | "studio"
   | "split"
   | "compress"
   | "pdf-to-image"
-  | "image-to-pdf";
+  | "text-formatter";
 
 export type FileCategory = "pdf" | "image" | "text" | "other";
 
-export interface QueuedFile {
+export type FilenameRule =
+  | "second-pdf"
+  | "first-pdf"
+  | "first-file"
+  | "custom";
+
+export type MarginPreset = "comfortable" | "minimal" | "none" | "wide";
+
+export interface StudioFileItem {
   id: string;
   file: File;
-  category: FileCategory;
+  kind: "pdf" | "image";
   previewUrl?: string;
-  addedAt: number;
+  pageCount?: number;
+  pageRange: string;
+  width?: number;
+  height?: number;
+  rotation: 0 | 90 | 180 | 270;
 }
 
 export type ToastTone = "success" | "error" | "warning" | "info";

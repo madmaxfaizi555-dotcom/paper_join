@@ -1,81 +1,126 @@
-import { ClipboardPaste, Menu } from "lucide-react";
+import { ClipboardPaste, FileText, Menu, X } from "lucide-react";
+import { useState } from "react";
 import type { WorkspaceView } from "../types";
 
 interface TopBarProps {
   activeView: WorkspaceView;
   onSelectView: (view: WorkspaceView) => void;
-  onOpenMobileMenu: () => void;
-  pastedCount: number;
+  onReadClipboard: () => void;
 }
 
-const VIEW_TITLES: Record<WorkspaceView, string> = {
-  overview: "Workspace Overview",
-  "paste-zone": "Quick Paste & Drop Zone",
-  "text-formatter": "Raw Text Formatter",
-  merge: "Merge PDF",
-  split: "Split PDF",
-  compress: "Compress PDF",
-  "pdf-to-image": "PDF to Image",
-  "image-to-pdf": "Image to PDF",
-};
+const NAV_ITEMS: { id: WorkspaceView; label: string }[] = [
+  { id: "studio", label: "Merge & Create" },
+  { id: "split", label: "Split PDF" },
+  { id: "compress", label: "Compress PDF" },
+  { id: "pdf-to-image", label: "PDF to Image" },
+  { id: "text-formatter", label: "Text Formatter" },
+];
 
 export function TopBar({
   activeView,
   onSelectView,
-  onOpenMobileMenu,
-  pastedCount,
+  onReadClipboard,
 }: TopBarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleSelect = (view: WorkspaceView) => {
+    onSelectView(view);
+    setMobileOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 sm:px-6">
-      <div className="flex min-w-0 items-center gap-3">
+    <header className="sticky top-0 z-30 border-b border-[#E4E8DF] bg-[#F8F9F5]/95 backdrop-blur-sm">
+      <div className="mx-auto flex h-16 max-w-[1160px] items-center justify-between gap-8 px-4 sm:px-6">
+        {/* Zone 1: Single-line Brand Wordmark */}
         <button
           type="button"
-          onClick={onOpenMobileMenu}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 lg:hidden"
-          aria-label="Open navigation menu"
+          onClick={() => handleSelect("studio")}
+          className="flex items-center gap-2.5 text-left whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#226847] rounded-md"
         >
-          <Menu className="h-4 w-4" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#226847] text-white">
+            <FileText className="h-4 w-4" />
+          </span>
+          <span className="font-display text-base font-semibold tracking-tight text-[#1D2B22] whitespace-nowrap">
+            PaperJoin Studio
+          </span>
         </button>
 
-        <div className="flex min-w-0 items-center gap-2 text-sm">
+        {/* Zone 2: Clean single-line nav links */}
+        <nav
+          className="hidden items-center gap-6 md:flex"
+          aria-label="Primary navigation"
+        >
+          {NAV_ITEMS.map((item) => {
+            const active = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleSelect(item.id)}
+                className={`relative py-1 text-sm font-medium transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#226847] rounded ${
+                  active
+                    ? "text-[#226847]"
+                    : "text-[#5C6B60] hover:text-[#1D2B22]"
+                }`}
+              >
+                {item.label}
+                {active && (
+                  <span
+                    className="absolute inset-x-0 -bottom-[21px] h-[2px] bg-[#226847]"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Zone 3: Primary Action */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => onSelectView("overview")}
-            className="hidden text-slate-500 hover:text-slate-900 sm:inline whitespace-nowrap shrink-0"
+            onClick={onReadClipboard}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#226847] px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-[#1B553A] whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#226847]"
           >
-            Workspace
+            <ClipboardPaste className="h-3.5 w-3.5" />
+            <span>Paste Files</span>
           </button>
-          <span className="hidden text-slate-300 sm:inline" aria-hidden="true">
-            /
-          </span>
-          <span className="truncate font-medium text-slate-900">
-            {VIEW_TITLES[activeView]}
-          </span>
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen((v) => !v)}
+            className="rounded-lg border border-[#E4E8DF] bg-white p-2 text-[#1D2B22] md:hidden"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 shrink-0">
-        <span className="hidden text-xs text-slate-500 md:inline whitespace-nowrap">
-          Press <kbd className="font-mono text-slate-700">Ctrl+V</kbd> anywhere to paste files
-        </span>
-
-        <button
-          type="button"
-          onClick={() =>
-            onSelectView(activeView === "paste-zone" ? "text-formatter" : "paste-zone")
-          }
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-indigo-700 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        >
-          <ClipboardPaste className="h-3.5 w-3.5" />
-          <span>
-            {activeView === "paste-zone"
-              ? "Text Formatter"
-              : pastedCount > 0
-              ? `Quick Paste (${pastedCount})`
-              : "Quick Paste"}
-          </span>
-        </button>
-      </div>
+      {/* Mobile Nav Drawer */}
+      {mobileOpen && (
+        <div className="border-t border-[#E4E8DF] bg-white px-4 py-3 md:hidden">
+          <div className="flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => {
+              const active = activeView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleSelect(item.id)}
+                  className={`rounded-lg px-3 py-2 text-left text-sm font-medium ${
+                    active
+                      ? "bg-[#EEF4EA] text-[#226847]"
+                      : "text-[#5C6B60] hover:bg-[#F2F6EE] hover:text-[#1D2B22]"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

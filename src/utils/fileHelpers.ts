@@ -1,11 +1,12 @@
-import type { FileCategory, QueuedFile } from "../types";
+import type { FileCategory } from "../types";
 
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  const val = bytes / Math.pow(k, i);
+  return `${val >= 100 || i === 0 ? Math.round(val) : parseFloat(val.toFixed(1))} ${sizes[i]}`;
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {
@@ -33,6 +34,10 @@ export function getFileExtension(filename: string): string {
   return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : "";
 }
 
+export function stripExtension(filename: string): string {
+  return filename.replace(/\.[^.]+$/, "");
+}
+
 export function getFileCategory(file: File): FileCategory {
   const ext = getFileExtension(file.name);
   if (file.type === "application/pdf" || ext === "pdf") return "pdf";
@@ -49,18 +54,6 @@ export function getFileCategory(file: File): FileCategory {
     return "text";
   }
   return "other";
-}
-
-export function createQueuedFile(file: File): QueuedFile {
-  const category = getFileCategory(file);
-  const previewUrl = category === "image" ? URL.createObjectURL(file) : undefined;
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    file,
-    category,
-    previewUrl,
-    addedAt: Date.now(),
-  };
 }
 
 export function parsePageRanges(input: string, maxPages: number): number[] {
@@ -87,8 +80,4 @@ export function parsePageRanges(input: string, maxPages: number): number[] {
     }
   }
   return Array.from(pages).sort((a, b) => a - b);
-}
-
-export async function readFileAsText(file: File): Promise<string> {
-  return await file.text();
 }
