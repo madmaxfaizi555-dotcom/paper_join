@@ -1,0 +1,6 @@
+{
+  "name": "PaperJoin PDF Studio",
+  "description": "Clean browser-local PDF studio workspace with Merge, Split, Compress, PDF-to-Image, Image-to-PDF, global Ctrl+V file paste, and an AI-assisted Raw Text Formatter.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
